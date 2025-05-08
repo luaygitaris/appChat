@@ -66,49 +66,54 @@ export async function DELETE(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { conversationId: string; messageId: string } } // Tambahkan conversationId
+  context: { params: { conversationId: string; messageId: string } }
 ) {
-  const session = await getServerSession(authOptions);
-  const { content } = await req.json();
-  const { conversationId, messageId } = await params; // Destructure kedua parameter
+  try {
+    const session = await getServerSession(authOptions);
+    const { content } = await req.json();
+    const { conversationId, messageId } = context.params;
 
-  if (!session?.user) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+    if (!session?.user) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
-  // Pertama, verifikasi conversation
-  const conversation = await prisma.conversation.findFirst({
-    where: {
-      id: conversationId,
-      participants: {
-        some: {
-          userId: session.user.id,
+    // Verifikasi conversation
+    const conversation = await prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        participants: {
+          some: {
+            userId: session.user.id,
+          },
         },
       },
-    },
-  });
+    });
 
-  if (!conversation) {
-    return NextResponse.json({ message: "Conversation not found" }, { status: 404 });
+    if (!conversation) {
+      return NextResponse.json({ message: "Conversation not found" }, { status: 404 });
+    }
+
+    // Verifikasi message
+    const message = await prisma.message.findUnique({
+      where: { id: messageId },
+    });
+
+    if (!message || message.conversationId !== conversationId) {
+      return NextResponse.json({ message: "Message not found" }, { status: 404 });
+    }
+
+    if (message.senderId !== session.user.id) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    }
+
+    const updated = await prisma.message.update({
+      where: { id: messageId },
+      data: { content },
+    });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("Error updating message:", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
-
-  // Kemudian verifikasi message
-  const message = await prisma.message.findUnique({
-    where: { id: messageId },
-  });
-
-  if (!message || message.conversationId !== conversationId) {
-    return NextResponse.json({ message: "Message not found" }, { status: 404 });
-  }
-
-  if (message.senderId !== session.user.id) {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-  }
-
-  const updated = await prisma.message.update({
-    where: { id: messageId },
-    data: { content },
-  });
-
-  return NextResponse.json(updated);
 }
