@@ -1,20 +1,23 @@
-import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
 
-import { prisma } from "@/lib/prisma"
-import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET(req: Request, { params }: { params: { conversationId: string } }) {
+export async function GET(
+  req: Request,
+  { params }: { params: { conversationId: string } }
+) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     if (!session?.user) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const conversationId = await params.conversationId
-    const { searchParams } = new URL(req.url)
-    const lastMessageId = searchParams.get("lastMessageId")
+    const conversationId = await params.conversationId;
+    const { searchParams } = new URL(req.url);
+    const lastMessageId = searchParams.get("lastMessageId");
 
     // Check if user is part of the conversation
     const conversation = await prisma.conversation.findFirst({
@@ -26,15 +29,18 @@ export async function GET(req: Request, { params }: { params: { conversationId: 
           },
         },
       },
-    })
+    });
 
     if (!conversation) {
-      return NextResponse.json({ message: "Conversation not found" }, { status: 404 })
+      return NextResponse.json(
+        { message: "Conversation not found" },
+        { status: 404 }
+      );
     }
 
     // If no lastMessageId is provided, return empty array
     if (!lastMessageId) {
-      return NextResponse.json([], { status: 200 })
+      return NextResponse.json([], { status: 200 });
     }
 
     // Get the last message to find its timestamp
@@ -42,10 +48,10 @@ export async function GET(req: Request, { params }: { params: { conversationId: 
       where: {
         id: lastMessageId,
       },
-    })
+    });
 
     if (!lastMessage) {
-      return NextResponse.json([], { status: 200 })
+      return NextResponse.json([], { status: 200 });
     }
 
     // Get new messages after the last message
@@ -71,11 +77,14 @@ export async function GET(req: Request, { params }: { params: { conversationId: 
       orderBy: {
         createdAt: "asc",
       },
-    })
+    });
 
-    return NextResponse.json(newMessages, { status: 200 })
+    return NextResponse.json(newMessages, { status: 200 });
   } catch (error) {
-    console.error("Error polling messages:", error)
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
+    console.error("Error polling messages:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
