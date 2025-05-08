@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 const conversationSchema = z.object({
   name: z.string().optional().nullable(),
