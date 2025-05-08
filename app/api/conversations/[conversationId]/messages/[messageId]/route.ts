@@ -5,13 +5,7 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
-interface PutParams {
-  params: {
-    conversationId: string;
-    messageId: string;
-  };
-}
-
+// DELETE handler: Menghapus pesan
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { conversationId: string; messageId: string } }
@@ -23,7 +17,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { conversationId, messageId } = await params;
+    const { conversationId, messageId } = params;
 
     const conversation = await prisma.conversation.findFirst({
       where: {
@@ -71,7 +65,11 @@ export async function DELETE(
   }
 }
 
-export async function PUT(request: NextRequest, { params }: PutParams) {
+// PUT handler: Mengedit isi pesan
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { conversationId: string; messageId: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
     const { content } = await request.json();
@@ -81,7 +79,10 @@ export async function PUT(request: NextRequest, { params }: PutParams) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // Verifikasi conversation
+    if (!content || typeof content !== "string") {
+      return NextResponse.json({ message: "Invalid content" }, { status: 400 });
+    }
+
     const conversation = await prisma.conversation.findFirst({
       where: {
         id: conversationId,
@@ -97,7 +98,6 @@ export async function PUT(request: NextRequest, { params }: PutParams) {
       return NextResponse.json({ message: "Conversation not found" }, { status: 404 });
     }
 
-    // Verifikasi message
     const message = await prisma.message.findUnique({
       where: { id: messageId },
     });
