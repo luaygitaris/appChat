@@ -66,11 +66,11 @@ export async function DELETE(
 
 export async function PUT(
   req: NextRequest,
-  context: { params: { messageId: string } }
+  { params }: { params: { messageId: string } }
 ) {
   const session = await getServerSession(authOptions);
   const { content } = await req.json();
-  const messageId = context.params.messageId;
+  const messageId = await params.messageId;
 
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
