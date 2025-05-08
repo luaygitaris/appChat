@@ -16,19 +16,31 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log("Received credentials:", credentials);
         const schema = z.object({
           email: z.string().email(),
           password: z.string().min(6),
         });
 
         const result = schema.safeParse(credentials);
-        if (!result.success) return null;
+        if (!result.success) {
+          console.log("Validation failed");
+          return null;
+        }
 
         const { email, password } = result.data;
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) return null;
+        if (!user) {
+          console.log("No user found for email:", email);
+          return null;
+        }
+        console.log("User found:", user);
 
         const isValid = await bcrypt.compare(password, user.Password || "");
+        if (!isValid) {
+          console.log("Password mismatch");
+          return null;
+        }
         return isValid ? user : null;
       },
     }),

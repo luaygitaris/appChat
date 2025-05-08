@@ -73,7 +73,7 @@ export default function SignupDialogOpen() {
           <div className="font-bold text-lg">MyApp</div>
           <div>
             <Link href="/" className="mr-4">Home</Link>
-            <Link href="/dashboard">Dashboard</Link>
+            <Link href="/">Dashboard</Link>
           </div>
         </div>
       </nav>
