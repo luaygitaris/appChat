@@ -66,23 +66,39 @@ export async function DELETE(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { messageId: string } }
+  { params }: { params: { conversationId: string; messageId: string } } // Tambahkan conversationId
 ) {
   const session = await getServerSession(authOptions);
   const { content } = await req.json();
-  const {messageId} = params;
+  const { conversationId, messageId } = params; // Destructure kedua parameter
 
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const message = await prisma.message.findUnique({
-    where: { id: messageId }, 
+  // Pertama, verifikasi conversation
+  const conversation = await prisma.conversation.findFirst({
+    where: {
+      id: conversationId,
+      participants: {
+        some: {
+          userId: session.user.id,
+        },
+      },
+    },
   });
-  
 
-  if (!message) {
-    return NextResponse.json({ message: "Not found" }, { status: 404 });
+  if (!conversation) {
+    return NextResponse.json({ message: "Conversation not found" }, { status: 404 });
+  }
+
+  // Kemudian verifikasi message
+  const message = await prisma.message.findUnique({
+    where: { id: messageId },
+  });
+
+  if (!message || message.conversationId !== conversationId) {
+    return NextResponse.json({ message: "Message not found" }, { status: 404 });
   }
 
   if (message.senderId !== session.user.id) {
