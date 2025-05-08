@@ -1,7 +1,19 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma"; // pastikan path ini sesuai strukturmu
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const users = await prisma.user.findMany();
-  res.status(200).json(users);
+export async function GET() {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true, // tambah jika perlu
+      },
+    });
+
+    return NextResponse.json(users);
+  } catch (error) {
+    console.error("[GET /api/test-users] Error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }
