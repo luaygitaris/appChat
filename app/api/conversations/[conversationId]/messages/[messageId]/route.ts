@@ -5,6 +5,13 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
+interface PutParams {
+  params: {
+    conversationId: string;
+    messageId: string;
+  };
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { conversationId: string; messageId: string } }
@@ -64,14 +71,11 @@ export async function DELETE(
   }
 }
 
-export async function PUT(
-  req: NextRequest,
-  context: { params: { conversationId: string; messageId: string } }
-) {
+export async function PUT(request: NextRequest, { params }: PutParams) {
   try {
     const session = await getServerSession(authOptions);
-    const { content } = await req.json();
-    const { conversationId, messageId } = context.params;
+    const { content } = await request.json();
+    const { conversationId, messageId } = params;
 
     if (!session?.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
