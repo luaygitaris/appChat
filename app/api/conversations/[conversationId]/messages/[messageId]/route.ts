@@ -17,7 +17,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { conversationId, messageId } = params;
+    const { conversationId, messageId } = await params;
 
     const conversation = await prisma.conversation.findFirst({
       where: {
@@ -68,12 +68,13 @@ export async function DELETE(
 // PUT handler: Mengedit isi pesan
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { conversationId: string; messageId: string } }
+  { params }: { params: Promise<{ conversationId: string; messageId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
     const { content } = await request.json();
-    const { conversationId, messageId } = params;
+    const conversationId = (await params).conversationId;
+    const messageId = (await params).messageId;
 
     if (!session?.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
