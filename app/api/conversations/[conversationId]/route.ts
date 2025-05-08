@@ -7,7 +7,7 @@ import { authOptions } from "@/lib/auth";
 // DELETE handler
 export async function DELETE(
   req: Request,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,7 +16,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const conversationId = params.conversationId;
+    const conversationId = (await params).conversationId;
 
     const conversation = await prisma.conversation.findFirst({
       where: {
@@ -90,10 +90,10 @@ export async function DELETE(
 // GET handler
 export async function GET(
   req: Request,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
-    const { conversationId } = await params;
+    const conversationId = (await params).conversationId;
 
     const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },

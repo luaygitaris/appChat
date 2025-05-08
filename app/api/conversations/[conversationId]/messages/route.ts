@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 
 export async function GET(
   req: Request,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
@@ -13,7 +13,7 @@ export async function GET(
   }
 
   try {
-    const { conversationId } = await params;
+    const conversationId = (await params).conversationId;
     const messages = await prisma.message.findMany({
       where: {
         conversationId,
@@ -45,7 +45,7 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
@@ -62,12 +62,13 @@ export async function POST(
     }
 
     const { content } = await req.json();
+    const conversationId = (await params).conversationId;
 
     const message = await prisma.message.create({
       data: {
         content,
         senderId: user.id,
-        conversationId: params.conversationId,
+        conversationId: conversationId,
       },
       include: {
         sender: {
