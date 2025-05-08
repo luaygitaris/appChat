@@ -66,11 +66,11 @@ export async function DELETE(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { messageId: string } }
+  context: { params: { messageId: string } }
 ) {
   const session = await getServerSession(authOptions);
   const { content } = await req.json();
-  const messageId = await params.messageId;
+  const messageId = context.params.messageId;
 
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -90,7 +90,7 @@ export async function PUT(
   }
 
   const updated = await prisma.message.update({
-    where: { id: params.messageId },
+    where: { id: messageId },
     data: { content },
   });
 
