@@ -16,7 +16,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { conversationId, messageId } = params;
+    const { conversationId, messageId } = await params;
 
     const conversation = await prisma.conversation.findFirst({
       where: {
@@ -70,7 +70,7 @@ export async function PUT(
 ) {
   const session = await getServerSession(authOptions);
   const { content } = await req.json();
-  const { conversationId, messageId } = params; // Destructure kedua parameter
+  const { conversationId, messageId } = await params; // Destructure kedua parameter
 
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
