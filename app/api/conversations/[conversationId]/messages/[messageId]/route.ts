@@ -70,13 +70,14 @@ export async function PUT(
 ) {
   const session = await getServerSession(authOptions);
   const { content } = await req.json();
+  const messageId = await params.messageId;
 
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const message = await prisma.message.findUnique({
-    where: { id: params.messageId }, 
+    where: { id: messageId }, 
   });
   
 
