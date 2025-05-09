@@ -3,7 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import * as React from "react";
 import { useSession } from "next-auth/react";
-import { RiSendPlaneLine, RiEdit2Line, RiDeleteBin5Fill } from "@remixicon/react";
+import {
+  RiSendPlaneLine,
+  RiEdit2Line,
+  RiDeleteBin5Fill,
+} from "@remixicon/react";
 import { ChatHeader } from "./ChatHeader";
 
 interface Message {
@@ -104,11 +108,14 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
 
   const handleEditMessage = async (messageId: string, newContent: string) => {
     try {
-      const res = await fetch(`/api/conversations/${conversationId}/messages/${messageId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: newContent }),
-      });
+      const res = await fetch(
+        `/api/conversations/${conversationId}/messages/${messageId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: newContent }),
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to edit message");
 
@@ -146,12 +153,12 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900 h-full">
       <div className="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <ChatHeader conversationId={conversationId} />
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500">
@@ -202,8 +209,6 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     </div>
   );
 }
-
-
 
 interface MessageBubbleProps {
   message: Message;
@@ -262,8 +267,7 @@ function MessageBubble({
           isCurrentUser
             ? "bg-blue-600 text-white rounded-br-none"
             : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-none"
-        }`}
-      >
+        }`}>
         {!isCurrentUser && (
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-medium">{message.sender.name}</span>
@@ -283,14 +287,12 @@ function MessageBubble({
             <div className="flex justify-end gap-2 mt-1">
               <button
                 onClick={handleEdit}
-                className="text-white text-xs font-medium"
-              >
+                className="text-white text-xs font-medium">
                 Simpan
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                className="text-gray-500 text-xs"
-              >
+                className="text-gray-500 text-xs">
                 Batal
               </button>
             </div>
@@ -301,8 +303,7 @@ function MessageBubble({
             <p
               className={`text-xs mt-1 opacity-70 ${
                 isCurrentUser ? "text-right" : "text-left"
-              }`}
-            >
+              }`}>
               {new Date(message.createdAt).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -319,14 +320,12 @@ function MessageBubble({
                 setEditContent(message.content);
                 setShowOptions(false);
               }}
-              className="flex items-center gap-2 w-full px-3 py-2 text-left text-sm text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
+              className="flex items-center gap-2 w-full px-3 py-2 text-left text-sm text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700">
               <RiEdit2Line /> <span>Edit</span>
             </button>
             <button
               onClick={() => onDelete(message.id)}
-              className="flex items-center gap-2 w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
+              className="flex items-center gap-2 w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700">
               <RiDeleteBin5Fill /> <span>Hapus</span>
             </button>
           </div>

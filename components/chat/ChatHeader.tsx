@@ -57,7 +57,7 @@ export function ChatHeader({ conversationId }: ChatHeaderProps) {
 
   return (
     <div className="p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-900">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white pl-10 lg:pl-0">
         {displayName}
       </h2>
     </div>
